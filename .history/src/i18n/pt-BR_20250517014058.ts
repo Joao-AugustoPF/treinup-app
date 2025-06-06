@@ -1,7 +1,0 @@
-export default {
-  // ... existing code ...
-  zipCodeRequired:
-    'Por favor, atualize seu CEP para continuar usando o aplicativo',
-  updateNow: 'Atualizar Agora',
-  // ... existing code ...
-};
