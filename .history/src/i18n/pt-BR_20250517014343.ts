@@ -1,0 +1,6 @@
+export default {
+  // ... existing code ...
+  addressInfoRequired:
+    'É importante preencher todas as informações de endereço para continuar usando o aplicativo',
+  // ... existing code ...
+};

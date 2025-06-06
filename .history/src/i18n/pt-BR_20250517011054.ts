@@ -1,0 +1,6 @@
+membershipPlan: 'Plano de Assinatura',
+planName: 'Nome do Plano',
+expiryDate: 'Data de Expiração',
+managePlan: 'Gerenciar Plano',
+noActivePlan: 'Você não possui um plano ativo',
+getPlan: 'Obter Plano', 
