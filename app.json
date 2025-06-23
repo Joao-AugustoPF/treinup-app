@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "treinup-app",
-    "slug": "treinup-app",
+    "name": "treinopp",
+    "slug": "treinopp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "treinupapp",
+    "scheme": "treinopp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,8 +13,10 @@
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera to take profile pictures.",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select profile pictures.",
-        "NSMicrophoneUsageDescription": "This app needs access to your microphone for videos."
-      }
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone for videos.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.treinopp.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,12 +24,16 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.treinupapp",
+      "package": "com.treinopp.app",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.WAKE_LOCK"
       ]
     },
     "web": {
@@ -52,7 +58,20 @@
           "photosPermission": "The app needs access to your photos to update your profile picture.",
           "cameraPermission": "The app needs access to your camera to take a profile picture."
         }
-      ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./assets/sounds/notification.mp3"
+          ]
+        }
+      ],
+      "expo-audio",
+      "expo-video",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
@@ -60,7 +79,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "37d9477d-6801-4387-b0ed-33fb75e80f22"
+        "projectId": "e5c10cc4-5b16-4d17-9cf6-7e598a44e558"
       }
     },
     "owner": "joaoaugustopfpf"

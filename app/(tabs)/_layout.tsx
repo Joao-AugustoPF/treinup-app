@@ -1,14 +1,16 @@
 import NotificationsButton from '@/components/NotificationsButton';
 import { useLocalization } from '@/src/context/LocalizationContext';
+import { usePlan } from '@/src/context/PlanContext';
+import { useProfile } from '@/src/context/ProfileContext';
 import { useTheme } from '@/src/context/ThemeContext';
 import { Redirect, Tabs } from 'expo-router';
 import {
-  Calendar,
-  CalendarClock as Classes,
-  ClipboardList,
-  ChartLine as LineChart,
-  User,
-  Users,
+    Calendar,
+    CalendarClock as Classes,
+    ClipboardList,
+    ChartLine as LineChart,
+    User,
+    Users,
 } from 'lucide-react-native';
 import { View } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
@@ -18,10 +20,15 @@ export default function TabLayout() {
   const { user, isLoading } = useAuth();
   const { privacySettings, isLoading: isLoadingPrivacy } = usePrivacy();
   const { isLoading: themeLoading, paperTheme } = useTheme();
+  const { hasActivePlan, loading: planLoading } = usePlan();
+  const { profile, loading: profileLoading } = useProfile();
   const { t } = useLocalization();
 
-  if (isLoading || isLoadingPrivacy || themeLoading) return null;
+  if (isLoading || isLoadingPrivacy || themeLoading || planLoading || profileLoading) return null;
   if (!user) return <Redirect href="/login" />;
+  
+  // Redirect to no-plan screen if user doesn't have active plan and is not OWNER
+  if (!hasActivePlan && profile?.role !== 'OWNER' && profile?.role !== 'TRAINER') return <Redirect href="/no-plan" />;
 
   const { colors } = paperTheme;
 

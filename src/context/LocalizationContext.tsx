@@ -241,6 +241,13 @@ const translations = {
     uploadPhoto: 'Carregar Foto',
     chooseAnOption: 'Escolha uma opção',
 
+    // Not found page
+    pageNotFound: 'Página não encontrada',
+    pageNotFoundDescription:
+      'A página que você está procurando não existe ou foi movida.',
+    goBack: 'Voltar',
+    goHome: 'Ir para a página inicial',
+
     //Plan page
     planName: 'Nome do Plano',
     expiryDate: 'Data de Expiração',
@@ -260,7 +267,8 @@ const translations = {
     addressInfoRequired: 'Informações de endereço são obrigatórias',
 
     editProfile: 'Editar Perfil',
-
+    name: 'Nome',
+    email: 'E-mail',
     save: 'Salvar',
 
     // Notifications page

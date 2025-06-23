@@ -5,7 +5,9 @@ import {
   NotificationService,
 } from '@/src/services/notification';
 import { ProfileService } from '@/src/services/profile';
+import { pushNotificationService, PushNotificationToken } from '@/src/services/pushNotification';
 import { RealtimeResponseEvent } from 'appwrite';
+import type { EventSubscription } from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Client } from 'react-native-appwrite';
@@ -29,11 +31,45 @@ export type Notification = {
 type NotificationsContextType = {
   notifications: Notification[];
   unreadCount: number;
+  pushToken: PushNotificationToken | null;
+  isPushRegistered: boolean;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   clearNotification: (id: string) => Promise<void>;
   clearAllNotifications: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
+  registerForPushNotifications: () => Promise<void>;
+  scheduleLocalNotification: (
+    title: string,
+    body: string,
+    data?: Record<string, any>
+  ) => Promise<string>;
+  scheduleWorkoutReminder: (
+    title: string,
+    body: string,
+    scheduledTime: Date,
+    data?: Record<string, any>
+  ) => Promise<string>;
+  scheduleDailyReminder: (
+    title: string,
+    body: string,
+    hour: number,
+    minute: number,
+    data?: Record<string, any>
+  ) => Promise<string>;
+  scheduleWeeklyReminder: (
+    title: string,
+    body: string,
+    weekday: number,
+    hour: number,
+    minute: number,
+    data?: Record<string, any>
+  ) => Promise<string>;
+  cancelNotification: (notificationId: string) => Promise<void>;
+  cancelAllNotifications: () => Promise<void>;
+  getBadgeCount: () => Promise<number>;
+  setBadgeCount: (count: number) => Promise<void>;
+  clearBadge: () => Promise<void>;
 };
 
 const client = new Client()
@@ -51,6 +87,8 @@ export function NotificationsProvider({
 }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pushToken, setPushToken] = useState<PushNotificationToken | null>(null);
+  const [isPushRegistered, setIsPushRegistered] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -66,7 +104,6 @@ export function NotificationsProvider({
   });
 
   const refreshNotifications = async () => {
-    console.log('refreshNotifications called');
     if (!user?.$id) {
       console.log('No user ID available, skipping refresh');
       return;
@@ -74,7 +111,6 @@ export function NotificationsProvider({
 
     try {
       const profile = await ProfileService.getUserProfile(user);
-      console.log('User profile loaded:', profile?.tenantId);
       if (!profile?.tenantId) {
         console.log('No tenant ID available, skipping refresh');
         return;
@@ -85,32 +121,140 @@ export function NotificationsProvider({
         NotificationService.getUnreadCount(profile.tenantId, user.$id),
       ]);
 
-      console.log('Fetched notifications:', fetchedNotifications.length);
-      console.log('Unread count:', count);
-
       setNotifications(fetchedNotifications.map(mapAppwriteNotification));
       setUnreadCount(count);
+
+      // Update badge count
+      await pushNotificationService.setBadgeCount(count);
     } catch (error) {
       console.error('Error refreshing notifications:', error);
     }
   };
 
+  const registerForPushNotifications = async () => {
+    console.log('🚀 Starting push notification registration...');
+    try {
+      const token = await pushNotificationService.registerForPushNotifications();
+      if (token) {
+        setPushToken(token);
+        setIsPushRegistered(true);
+        console.log('Push notifications registered successfully');
+        console.log('🔔 Expo Token:', token.expoToken);
+        console.log('📱 Device Token:', token.deviceToken);
+        console.log('✅ Push Token Object:', token);
+      } else {
+        console.log('❌ No push token received');
+      }
+    } catch (error) {
+      console.error('Error registering for push notifications:', error);
+    }
+  };
+
+  const scheduleLocalNotification = async (
+    title: string,
+    body: string,
+    data?: Record<string, any>
+  ): Promise<string> => {
+    return await pushNotificationService.scheduleLocalNotification(title, body, data);
+  };
+
+  const scheduleWorkoutReminder = async (
+    title: string,
+    body: string,
+    scheduledTime: Date,
+    data?: Record<string, any>
+  ): Promise<string> => {
+    return await pushNotificationService.scheduleWorkoutReminder(title, body, scheduledTime, data);
+  };
+
+  const scheduleDailyReminder = async (
+    title: string,
+    body: string,
+    hour: number,
+    minute: number,
+    data?: Record<string, any>
+  ): Promise<string> => {
+    return await pushNotificationService.scheduleDailyReminder(title, body, hour, minute, data);
+  };
+
+  const scheduleWeeklyReminder = async (
+    title: string,
+    body: string,
+    weekday: number,
+    hour: number,
+    minute: number,
+    data?: Record<string, any>
+  ): Promise<string> => {
+    return await pushNotificationService.scheduleWeeklyReminder(title, body, weekday, hour, minute, data);
+  };
+
+  const cancelNotification = async (notificationId: string): Promise<void> => {
+    await pushNotificationService.cancelNotification(notificationId);
+  };
+
+  const cancelAllNotifications = async (): Promise<void> => {
+    await pushNotificationService.cancelAllNotifications();
+  };
+
+  const getBadgeCount = async (): Promise<number> => {
+    return await pushNotificationService.getBadgeCount();
+  };
+
+  const setBadgeCount = async (count: number): Promise<void> => {
+    await pushNotificationService.setBadgeCount(count);
+  };
+
+  const clearBadge = async (): Promise<void> => {
+    await pushNotificationService.clearBadge();
+  };
+
   useEffect(() => {
     if (user?.$id) {
       refreshNotifications();
+      registerForPushNotifications();
 
-      // Subscribe to realtime notifications using react-native-appwrite
-      console.log('Setting up realtime subscription for notifications...');
-      console.log(
-        'Subscription channel:',
-        `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`
-      );
+      let notificationListener: EventSubscription | null = null;
+      let responseListener: EventSubscription | null = null;
+
+      // Setup notification listeners
+      pushNotificationService.addNotificationReceivedListener(
+        (notification) => {
+          console.log('Notification received:', notification);
+          // Refresh notifications when a new one is received
+          refreshNotifications();
+        }
+      ).then((listener) => {
+        notificationListener = listener;
+      });
+
+      pushNotificationService.addNotificationResponseReceivedListener(
+        (response) => {
+          console.log('Notification response received:', response);
+          // Handle notification tap
+          const data = response.notification.request.content.data;
+          if (data?.screen) {
+            router.push(data.screen as any);
+          }
+        }
+      ).then((listener) => {
+        responseListener = listener;
+      });
+
+      // Check for initial notification response
+      pushNotificationService.getLastNotificationResponse().then((response) => {
+        if (response) {
+          console.log('Initial notification response:', response);
+          const data = response.notification.request.content.data;
+          if (data?.screen) {
+            router.push(data.screen as any);
+          }
+        }
+      });
 
       try {
         const unsubscribe = client.subscribe(
           `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`,
           (response: RealtimeResponseEvent<AppwriteNotification>) => {
-            console.log('Realtime event received:', response.events);
             if (
               response.events.includes(
                 'databases.*.collections.*.documents.*.create'
@@ -122,24 +266,36 @@ export function NotificationsProvider({
                 'databases.*.collections.*.documents.*.delete'
               )
             ) {
-              console.log('Change detected in notifications, refreshing...');
               refreshNotifications();
             }
           }
         );
 
-        console.log('Realtime subscription successful');
-
         // Cleanup subscription on unmount
         return () => {
-          console.log('Cleaning up realtime subscription...');
           unsubscribe();
+          if (notificationListener) {
+            notificationListener.remove();
+          }
+          if (responseListener) {
+            responseListener.remove();
+          }
         };
       } catch (error) {
         console.error('Failed to setup realtime subscription:', error);
       }
     }
   }, [user?.$id]);
+
+  // Monitor pushToken changes
+  useEffect(() => {
+    if (pushToken) {
+      console.log('🔄 Push Token Updated:');
+      console.log('🔔 Expo Token:', pushToken.expoToken);
+      console.log('📱 Device Token:', pushToken.deviceToken);
+      console.log('✅ Full Token Object:', pushToken);
+    }
+  }, [pushToken]);
 
   const markAsRead = async (id: string) => {
     if (!user?.$id) return;
@@ -197,11 +353,23 @@ export function NotificationsProvider({
       value={{
         notifications,
         unreadCount,
+        pushToken,
+        isPushRegistered,
         markAsRead,
         markAllAsRead,
         clearNotification,
         clearAllNotifications,
         refreshNotifications,
+        registerForPushNotifications,
+        scheduleLocalNotification,
+        scheduleWorkoutReminder,
+        scheduleDailyReminder,
+        scheduleWeeklyReminder,
+        cancelNotification,
+        cancelAllNotifications,
+        getBadgeCount,
+        setBadgeCount,
+        clearBadge,
       }}
     >
       {children}

@@ -431,7 +431,7 @@
                 {
                     "key": "userId",
                     "type": "string",
-                    "required": true,
+                    "required": false,
                     "array": false,
                     "size": 128,
                     "default": null
@@ -476,14 +476,6 @@
                 },
                 {
                     "key": "phoneNumber",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 20,
-                    "default": null
-                },
-                {
-                    "key": "birthDate",
                     "type": "string",
                     "required": false,
                     "array": false,
@@ -579,14 +571,14 @@
                     "type": "boolean",
                     "required": false,
                     "array": false,
-                    "default": true
+                    "default": false
                 },
                 {
                     "key": "privacy_showProgress",
                     "type": "boolean",
                     "required": false,
                     "array": false,
-                    "default": false
+                    "default": true
                 },
                 {
                     "key": "privacy_twoFactorAuth",
@@ -678,6 +670,53 @@
                     "array": false,
                     "size": 128,
                     "default": null
+                },
+                {
+                    "key": "cpf",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 64,
+                    "default": null
+                },
+                {
+                    "key": "birthDate",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "addressNeighborhood",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 128,
+                    "default": null
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "elements": [
+                        "ACTIVE",
+                        "INACTIVE",
+                        "PENDING",
+                        "BLOCKED"
+                    ],
+                    "format": "enum",
+                    "default": "INACTIVE"
+                },
+                {
+                    "key": "maxBookings",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": 0,
+                    "max": 600,
+                    "default": 3
                 }
             ],
             "indexes": [
@@ -687,6 +726,17 @@
                     "status": "available",
                     "attributes": [
                         "userId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "name_search",
+                    "type": "fulltext",
+                    "status": "available",
+                    "attributes": [
+                        "name"
                     ],
                     "orders": [
                         "ASC"
@@ -845,6 +895,18 @@
                     "twoWayKey": "682281270032ca13a370",
                     "onDelete": "restrict",
                     "side": "parent"
+                },
+                {
+                    "key": "evaluationBookings",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedCollection": "68227ac1002ddf20d0e8",
+                    "relationType": "manyToOne",
+                    "twoWay": false,
+                    "twoWayKey": "68414d120013c5559361",
+                    "onDelete": "restrict",
+                    "side": "parent"
                 }
             ],
             "indexes": []
@@ -915,16 +977,12 @@
                 "create(\"team:6821988e0022060185a9\")",
                 "read(\"team:6821988e0022060185a9\")",
                 "update(\"team:6821988e0022060185a9\")",
-                "delete(\"team:6821988e0022060185a9\")",
-                "create(\"user:68290d987241d023ba6a\")",
-                "read(\"user:68290d987241d023ba6a\")",
-                "update(\"user:68290d987241d023ba6a\")",
-                "delete(\"user:68290d987241d023ba6a\")"
+                "delete(\"team:6821988e0022060185a9\")"
             ],
             "databaseId": "treinup",
             "name": "Academies",
             "enabled": true,
-            "documentSecurity": false,
+            "documentSecurity": true,
             "attributes": [
                 {
                     "key": "name",
@@ -1046,6 +1104,26 @@
                     "required": true,
                     "array": false,
                     "size": 128,
+                    "default": null
+                },
+                {
+                    "key": "addressNumber",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 64,
+                    "default": null
+                },
+                {
+                    "key": "permissions",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "elements": [
+                        "OWNER",
+                        "TRAINER"
+                    ],
+                    "format": "enum",
                     "default": null
                 }
             ],
@@ -1361,18 +1439,6 @@
                     "default": null
                 },
                 {
-                    "key": "evaluationSlots",
-                    "type": "relationship",
-                    "required": false,
-                    "array": false,
-                    "relatedCollection": "68227a80001b40eaaaec",
-                    "relationType": "manyToOne",
-                    "twoWay": false,
-                    "twoWayKey": "682280e00017c75a4b00",
-                    "onDelete": "restrict",
-                    "side": "parent"
-                },
-                {
                     "key": "memberProfileId",
                     "type": "relationship",
                     "required": false,
@@ -1383,13 +1449,62 @@
                     "twoWayKey": "682280f80002672cfe1d",
                     "onDelete": "restrict",
                     "side": "parent"
+                },
+                {
+                    "key": "evaluationSlots",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedCollection": "68227a80001b40eaaaec",
+                    "relationType": "manyToOne",
+                    "twoWay": false,
+                    "twoWayKey": "6836670e001f13e7e1e0",
+                    "onDelete": "restrict",
+                    "side": "parent"
+                },
+                {
+                    "key": "notes",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null
+                },
+                {
+                    "key": "objectives",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 256,
+                    "default": null
+                },
+                {
+                    "key": "restrictions",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 256,
+                    "default": null
+                },
+                {
+                    "key": "medicalHistory",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2000,
+                    "default": null
                 }
             ],
             "indexes": []
         },
         {
             "$id": "68227b900005e53f0bdf",
-            "$permissions": [],
+            "$permissions": [
+                "create(\"team:6821988e0022060185a9\")",
+                "read(\"team:6821988e0022060185a9\")",
+                "update(\"team:6821988e0022060185a9\")",
+                "delete(\"team:6821988e0022060185a9\")"
+            ],
             "databaseId": "treinup",
             "name": "Payments",
             "enabled": true,
@@ -1597,6 +1712,186 @@
                     "orders": [
                         "ASC",
                         "DESC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "mensalidades",
+            "$permissions": [
+                "create(\"team:6821988e0022060185a9\")",
+                "read(\"team:6821988e0022060185a9\")",
+                "update(\"team:6821988e0022060185a9\")",
+                "delete(\"team:6821988e0022060185a9\")"
+            ],
+            "databaseId": "treinup",
+            "name": "Mensalidades",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "alunoId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 128,
+                    "default": null
+                },
+                {
+                    "key": "planoId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 128,
+                    "default": null
+                },
+                {
+                    "key": "mesReferencia",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 7,
+                    "default": null
+                },
+                {
+                    "key": "dataVencimento",
+                    "type": "datetime",
+                    "required": true,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "dataPagamento",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "valor",
+                    "type": "double",
+                    "required": true,
+                    "array": false,
+                    "min": 0,
+                    "max": 1.7976931348623157e+308,
+                    "default": null
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "elements": [
+                        "PENDENTE",
+                        "PAGO",
+                        "ATRASADO",
+                        "CANCELADO"
+                    ],
+                    "format": "enum",
+                    "default": null
+                },
+                {
+                    "key": "formaPagamento",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "elements": [
+                        "DINHEIRO",
+                        "PIX",
+                        "CARTAO_CREDITO",
+                        "CARTAO_DEBITO",
+                        "TRANSFERENCIA",
+                        "BOLETO"
+                    ],
+                    "format": "enum",
+                    "default": null
+                },
+                {
+                    "key": "observacoes",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 500,
+                    "default": null
+                },
+                {
+                    "key": "pagamentoId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 128,
+                    "default": null
+                },
+                {
+                    "key": "tenantId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 128,
+                    "default": null
+                },
+                {
+                    "key": "createdBy",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 128,
+                    "default": null
+                },
+                {
+                    "key": "updatedBy",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 128,
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "alunoId_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "alunoId"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "mesReferencia_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "mesReferencia"
+                    ],
+                    "orders": [
+                        "DESC"
+                    ]
+                },
+                {
+                    "key": "status_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "status"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "dataVencimento_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "dataVencimento"
+                    ],
+                    "orders": [
+                        "ASC"
                     ]
                 }
             ]

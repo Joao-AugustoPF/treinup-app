@@ -41,7 +41,6 @@ export default function RegisterScreen() {
       setLoading(true);
       setError('');
       await register(email, password, name);
-      router.replace('/plans');
     } catch (err) {
       setError('Falha no cadastro. Por favor, tente novamente.');
     } finally {

@@ -1,10 +1,11 @@
 import { Query } from 'appwrite';
 import {
-  DATABASE_ID,
-  db,
-  PLANS_COLLECTION_ID,
-  PROFILES_COLLECTION_ID,
-  SUBSCRIPTIONS_COLLECTION_ID,
+    ACADEMIES_COLLECTION_ID,
+    DATABASE_ID,
+    db,
+    PLANS_COLLECTION_ID,
+    PROFILES_COLLECTION_ID,
+    SUBSCRIPTIONS_COLLECTION_ID,
 } from '../api/appwrite-client';
 
 export type Plan = {
@@ -23,6 +24,21 @@ export type Subscription = {
   profileId: string;
   planId: string;
   tenantId: string;
+};
+
+export type Academy = {
+  id: string;
+  name: string;
+  phone?: string;
+  tenantId: string;
+};
+
+// Default academy info as fallback
+const DEFAULT_ACADEMY: Academy = {
+  id: 'default',
+  name: 'Lidiane Moretto - Estúdio Personal',
+  phone: '(11) 99999-9999',
+  tenantId: '6821988e0022060185a9',
 };
 
 export class PlanService {
@@ -85,6 +101,43 @@ export class PlanService {
     } catch (error) {
       console.error('Error getting active subscription:', error);
       throw error;
+    }
+  }
+
+  static async hasActivePlan(user: any): Promise<boolean> {
+    try {
+      const subscription = await this.getActiveSubscription(user);
+      return subscription !== null;
+    } catch (error) {
+      console.error('Error checking active plan:', error);
+      return false;
+    }
+  }
+
+  static async getAcademyByTenantId(tenantId: string): Promise<Academy | null> {
+    try {
+      const academiesResponse = await db.listDocuments(
+        DATABASE_ID,
+        ACADEMIES_COLLECTION_ID,
+        [Query.equal('tenantId', tenantId)]
+      );
+
+      if (academiesResponse.documents.length === 0) {
+        console.log('No academy found for tenant ID:', tenantId);
+        return DEFAULT_ACADEMY;
+      }
+
+      const academy = academiesResponse.documents[0];
+      return {
+        id: academy.$id,
+        name: academy.name,
+        phone: academy.phone,
+        tenantId: academy.tenantId,
+      };
+    } catch (error) {
+      console.error('Error getting academy by tenant ID:', error);
+      // Return default academy as fallback
+      return DEFAULT_ACADEMY;
     }
   }
 

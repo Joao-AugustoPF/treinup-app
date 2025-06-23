@@ -11,9 +11,6 @@ export default function Index() {
   const { user, isLoading: isLoadingAuth } = useAuth();
   const { activeTenantId, isLoading: isLoadingTenant } = useTenant();
 
-  console.log('isLoadingAuth', isLoadingAuth);
-  console.log('isLoadingTenant', isLoadingTenant);
-
   if (isLoadingAuth || isLoadingTenant) {
     return (
       <View style={styles.container}>

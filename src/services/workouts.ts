@@ -52,30 +52,19 @@ export class WorkoutService {
     }
 
     try {
-      console.log('Fetching workouts for tenantId:', tenantId);
-
       const workoutsResponse = await db.listDocuments(
         DATABASE_ID,
         WORKOUTS_COLLECTION_ID,
         [Query.equal('tenantId', tenantId)]
       );
 
-      console.log('Workouts found:', workoutsResponse);
-
       const workouts: Workout[] = await Promise.all(
         workoutsResponse.documents.map(async (workoutDoc) => {
           try {
-            console.log(`Processing workout: ${workoutDoc.$id}`);
-
             const setsResponse = await db.listDocuments(
               DATABASE_ID,
               WORKOUT_SETS_COLLECTION_ID,
               [Query.equal('workoutId', workoutDoc.$id)]
-            );
-
-            console.log(
-              `Sets found for workout ${workoutDoc.$id}:`,
-              setsResponse.documents.length
             );
 
             const sets: WorkoutSet[] = await Promise.all(
@@ -91,7 +80,7 @@ export class WorkoutService {
                     muscleGroup: rawExercise.muscleGroup,
                     tutorialUrl: rawExercise.tutorialUrl,
                     equipmentId: rawExercise.equipmentId,
-                    imageUrl: rawExercise.imageUrl,
+                    // imageUrl: rawExercise.imageUrl,
                   };
                 } else if (typeof rawExercise === 'string') {
                   // Fetch exercise by ID
@@ -107,7 +96,7 @@ export class WorkoutService {
                       muscleGroup: exerciseDoc.muscleGroup,
                       tutorialUrl: exerciseDoc.tutorialUrl,
                       equipmentId: exerciseDoc.equipmentId,
-                      imageUrl: exerciseDoc.imageUrl,
+                      // imageUrl: exerciseDoc.imageUrl,
                     };
                   } catch (err) {
                     console.error(

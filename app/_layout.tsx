@@ -13,10 +13,10 @@ import { ProfileProvider } from '@/src/context/ProfileContext';
 import { TenantProvider } from '@/src/context/TenantContext';
 import { ThemeProvider, useTheme } from '@/src/context/ThemeContext';
 import {
-  DarkTheme,
-  LightTheme,
-  NavigationDarkTheme,
-  NavigationLightTheme,
+    DarkTheme,
+    LightTheme,
+    NavigationDarkTheme,
+    NavigationLightTheme,
 } from '@/src/lib/theme';
 import { Slot } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';

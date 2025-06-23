@@ -29,7 +29,6 @@ export default function LoginScreen() {
       setLoading(true);
       setError('');
       await login(email, password);
-      router.replace('/plans');
     } catch (err) {
       console.log('Login error: ' + err);
       setError('Email ou senha inválidos');
@@ -85,7 +84,7 @@ export default function LoginScreen() {
                   theme={{
                     colors: {
                       onSurfaceVariant: '#ffb6c1',
-                      background: 'transparent',
+                      background: '#C71585',
                     },
                   }}
                   outlineStyle={{
@@ -110,7 +109,7 @@ export default function LoginScreen() {
                   theme={{
                     colors: {
                       onSurfaceVariant: '#ffb6c1',
-                      background: 'transparent',
+                      background: '#C71585',
                     },
                   }}
                   outlineStyle={{

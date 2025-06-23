@@ -77,7 +77,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const uploadImage = async (asset: any) => {
     try {
       setIsUploading(true);
-      console.log(asset);
 
       if (!checkFileSize(asset.fileSize)) {
         setIsUploading(false);

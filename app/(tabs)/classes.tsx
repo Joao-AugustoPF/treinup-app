@@ -124,9 +124,6 @@ export default function ClassesScreen() {
         .setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!)
         .setProject(process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!);
 
-      console.log('client', process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT);
-      console.log('client', process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID);
-
       // Subscribe to realtime updates for classes
       const unsubscribe = client.subscribe(
         `databases.${DATABASE_ID}.collections.${CLASSES_COLLECTION_ID}.documents`,
@@ -184,7 +181,6 @@ export default function ClassesScreen() {
       if (response.error) {
         console.warn('Error fetching class types:', response.error);
       } else {
-        console.log(response.data);
         setClassTypes(response.data.types);
       }
     } catch (err) {
@@ -324,7 +320,7 @@ export default function ClassesScreen() {
           ]}
         >
           <Text style={[styles.title, { color: paperTheme.colors.onSurface }]}>
-            Aulas de Fitness
+            Aulas
           </Text>
           <Text
             style={[

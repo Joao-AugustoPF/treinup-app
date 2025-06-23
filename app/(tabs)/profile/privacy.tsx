@@ -11,11 +11,11 @@ import {
   Alert,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Switch } from 'react-native-paper';
 
 export default function PrivacyScreen() {
   const router = useRouter();
@@ -29,6 +29,19 @@ export default function PrivacyScreen() {
   const { paperTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loadPrivacySettings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // The privacy settings are loaded by the usePrivacy hook
+      // This function is just for retry functionality
+    } catch (error) {
+      setError(t('failedToLoadPrivacySettings'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTogglePrivacy = async (
     key: keyof typeof privacySettings,
@@ -274,12 +287,8 @@ export default function PrivacyScreen() {
                     <Switch
                       value={item.value}
                       onValueChange={item.onToggle}
-                      trackColor={{
-                        false: paperTheme.colors.surfaceVariant,
-                        true: paperTheme.colors.primary,
-                      }}
-                      thumbColor={paperTheme.colors.onPrimary}
                       disabled={loading}
+                      color={paperTheme.colors.primary}
                     />
                   )}
                   {item.type === 'button' && (

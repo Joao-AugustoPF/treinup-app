@@ -1,8 +1,8 @@
 import { Query } from 'appwrite';
 import {
-  DATABASE_ID,
-  db,
-  PROFILES_COLLECTION_ID,
+    DATABASE_ID,
+    db,
+    PROFILES_COLLECTION_ID,
 } from '../api/appwrite-client';
 
 export type UserProfile = {
@@ -20,6 +20,7 @@ export type UserProfile = {
   addressZip: string;
   tenantId: string;
   role: string;
+  maxBookings?: number;
   stats: {
     workouts: number;
     classes: number;
@@ -125,6 +126,7 @@ export class ProfileService {
         addressZip: profileDoc.addressZip || '',
         tenantId: profileDoc.tenantId || '',
         role: profileDoc.role || '',
+        maxBookings: profileDoc.maxBookings ?? 3,
         stats: {
           workouts: profileDoc.stats_workouts || 0,
           classes: profileDoc.stats_classes || 0,
@@ -223,8 +225,6 @@ export class ProfileService {
   static async updateUserAvatar(user: any, avatarUrl: string) {
     try {
       const profile = await this.getUserProfile(user);
-
-      console.log(profile);
 
       return await db.updateDocument(
         DATABASE_ID,

@@ -3,6 +3,7 @@ import { useLocalization } from '@/src/context/LocalizationContext';
 import { useTheme } from '@/src/context/ThemeContext';
 import { ProfileService } from '@/src/services/profile';
 import { useRouter } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -229,11 +230,19 @@ export default function EditProfileScreen() {
             { backgroundColor: paperTheme.colors.surface },
           ]}
         >
-          <Text
-            style={[styles.headerTitle, { color: paperTheme.colors.onSurface }]}
-          >
-            {t('editProfile')}
-          </Text>
+          <View style={styles.headerContent}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <ArrowLeft size={24} color={paperTheme.colors.onSurface} />
+            </TouchableOpacity>
+            <Text
+              style={[styles.headerTitle, { color: paperTheme.colors.onSurface }]}
+            >
+              {t('editProfile')}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.content}>
@@ -487,7 +496,13 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    paddingTop: 60,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 15,
   },
   headerTitle: {
     fontSize: 24,

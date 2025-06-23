@@ -81,18 +81,11 @@ export default function WorkoutsScreen() {
     try {
       setLoading(true);
       setError(null);
-      console.log(
-        'Loading workouts for gym:',
-        currentGym.name,
-        'with tenantId:',
-        currentGym.tenantId
-      );
+
       const userWorkouts = await WorkoutService.getUserWorkouts(
         user,
         currentGym.tenantId
       );
-
-      console.log(`Found ${userWorkouts.length} workouts`);
 
       // Converter os treinos para o formato usado pela UI
       const uiWorkouts = userWorkouts.map((workout) =>
@@ -118,7 +111,6 @@ export default function WorkoutsScreen() {
   };
 
   const formatRestTime = (seconds: number | undefined): string => {
-    console.log('seconds', seconds);
     if (!seconds) return '0s';
     if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
@@ -139,7 +131,7 @@ export default function WorkoutsScreen() {
         workout.sets?.map((set) => {
           const exerciseInfo = set.exercise!;
           return {
-            id: set.setId || exerciseInfo.id,
+            id: set.exerciseId || exerciseInfo.id,
             name: exerciseInfo.name,
             muscle: exerciseInfo.muscleGroup,
             sets: set.series,

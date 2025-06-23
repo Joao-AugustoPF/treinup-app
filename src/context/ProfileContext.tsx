@@ -9,6 +9,7 @@ export type Profile = {
   email: string;
   role: 'USER' | 'TRAINER' | 'OWNER';
   image?: string;
+  maxBookings?: number;
   privacy: {
     publicProfile: boolean;
     showWorkouts: boolean;
@@ -51,7 +52,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(true);
       setError(null);
       const userProfile = await ProfileService.getUserProfile(user);
-      setProfile(userProfile);
+      setProfile({
+        ...userProfile,
+        maxBookings: userProfile.maxBookings,
+      });
     } catch (err) {
       setError('Failed to load profile');
       console.error('Error loading profile:', err);

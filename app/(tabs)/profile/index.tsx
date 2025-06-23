@@ -6,7 +6,7 @@ import { useNotifications } from '@/src/context/NotificationContext';
 import { usePlan } from '@/src/context/PlanContext';
 import { useTheme } from '@/src/context/ThemeContext';
 import { PaymentService } from '@/src/services/payment';
-import { ProfileService } from '@/src/services/profile';
+import { ProfileService, UserProfile } from '@/src/services/profile';
 import { useFocusEffect, useRouter } from 'expo-router';
 import {
   Bell,
@@ -27,11 +27,11 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Switch } from 'react-native-paper';
 
 type MenuItem = {
   icon: LucideIcon;
@@ -52,7 +52,7 @@ export default function ProfileScreen() {
   const { unreadCount } = useNotifications();
   const { t } = useLocalization();
   const { paperTheme } = useTheme();
-  const [profile, setProfile] = useState<any | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [paymentMethodsCount, setPaymentMethodsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,7 +99,7 @@ export default function ProfileScreen() {
       const updatedPreferences = await ProfileService.updatePreferences(user, {
         [key]: value,
       });
-      setProfile((prev: any) =>
+      setProfile((prev: UserProfile | null) =>
         prev
           ? {
               ...prev,
@@ -249,7 +249,7 @@ export default function ProfileScreen() {
               ) : (
                 <ImageUploader
                   onUploadComplete={loadProfile}
-                  image={profile.photoURL}
+                  image={profile.photoURL || undefined}
                   size={100}
                   borderColor={paperTheme.colors.primary}
                   iconColor={paperTheme.colors.onPrimary}
@@ -584,11 +584,7 @@ export default function ProfileScreen() {
                   <Switch
                     value={typeof item.value === 'boolean' ? item.value : false}
                     onValueChange={item.onPress}
-                    trackColor={{
-                      false: paperTheme.colors.surfaceVariant,
-                      true: paperTheme.colors.primary,
-                    }}
-                    thumbColor={paperTheme.colors.onPrimary}
+                    color={paperTheme.colors.primary}
                   />
                 ) : (
                   <ChevronRight

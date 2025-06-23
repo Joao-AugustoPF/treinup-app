@@ -115,7 +115,6 @@ export class ProgressService {
       // 1. Buscar o perfil do usuário
 
       const profile = await this.getUserProfile(user.$id);
-      console.log('Perfil encontrado:', profile);
       const profileId = profile.$id;
 
       // 2. Buscar métricas associadas ao perfil

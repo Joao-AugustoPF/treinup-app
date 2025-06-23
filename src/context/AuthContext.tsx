@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedSessionId = await secureStore.getSessionId();
       if (storedSessionId) {
         const session = await account.getSession(storedSessionId);
+        client.setSession(session.$id);
         const jwt = await account.createJWT();
         client.setJWT(jwt.jwt);
         setSessionId(session.$id);
@@ -57,9 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Tenta limpar sessão anterior usando a função separada
       // await deleteCurrentSession();
-
       const session = await account.createEmailPasswordSession(email, password);
-      const jwt = await account.createJWT();
+
+      client.setSession(session.$id);   // precisa vir *antes* de qualquer outra chamada
+      const jwt = await account.createJWT(); // agora não quebra
 
       await secureStore.setSessionId(session.$id);
       await secureStore.setJWT(jwt.jwt);
@@ -134,9 +136,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      // Usar a função dedicada para deletar a sessão
-      await deleteCurrentSession();
+      // Apaga a sessão *pelo ID real*, não por 'current'
+      if (sessionId) {
+        await account.deleteSession(sessionId);
+      }
+
+      // Limpa qualquer autenticação em memória
+      client.setSession('');  // remove X-Appwrite-Session
+      client.setJWT('');      // remove X-Appwrite-JWT
+
+      // Limpa armazenamento local
       await secureStore.clearAll();
+
       setUser(null);
       setSessionId(null);
     } catch (error) {

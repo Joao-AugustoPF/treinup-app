@@ -1,11 +1,14 @@
+import { DATABASE_ID, PROFILES_COLLECTION_ID, db } from '@/src/api/appwrite-client';
 import { useAuth } from '@/src/context/AuthContext';
 import { useGym } from '@/src/context/GymContext';
+import { useProfile } from '@/src/context/ProfileContext';
 import { useTheme } from '@/src/context/ThemeContext';
 import {
   ScheduleService,
   type Schedule,
   type Trainer,
 } from '@/src/services/schedule';
+import { Query } from 'appwrite';
 import {
   Calendar,
   CalendarCheck,
@@ -23,17 +26,19 @@ import {
   Alert,
   Animated,
   Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 export default function ScheduleScreen() {
   const { user } = useAuth();
   const { currentGym } = useGym();
   const { paperTheme } = useTheme();
+  const { profile, loading: profileLoading, refreshProfile } = useProfile();
   const [showNewSchedule, setShowNewSchedule] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -43,6 +48,7 @@ export default function ScheduleScreen() {
   const [availableTrainers, setAvailableTrainers] = useState<Trainer[]>([]);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateLoading, setDateLoading] = useState(false);
   const [slotLoading, setSlotLoading] = useState(false);
@@ -53,6 +59,7 @@ export default function ScheduleScreen() {
     completed: false,
     cancelled: false,
   });
+  const [localMaxBookings, setLocalMaxBookings] = useState<number | undefined>(undefined);
 
   // Animation values
   const upcomingAnimation = useRef(new Animated.Value(1)).current;
@@ -121,10 +128,6 @@ export default function ScheduleScreen() {
           ScheduleService.getUserSchedules(user),
         ]);
 
-        console.log('Dates loaded:', dates.length);
-        console.log('Trainers loaded:', trainers.length);
-        console.log('User schedules loaded:', userSchedules);
-
         // Separate upcoming and past/cancelled schedules for debugging
         const upcoming = userSchedules.filter(
           (s) => s.status === 'booked' && new Date(s.date) >= new Date()
@@ -132,10 +135,7 @@ export default function ScheduleScreen() {
         const history = userSchedules.filter(
           (s) => s.status === 'cancelled' || new Date(s.date) < new Date()
         );
-
-        console.log('Upcoming schedules:', upcoming.length);
-        console.log('History schedules:', history.length);
-
+        
         if (mounted) {
           setAvailableDates(dates);
           setAvailableTrainers(trainers);
@@ -159,6 +159,69 @@ export default function ScheduleScreen() {
       mounted = false;
     };
   }, [user, currentGym]);
+
+  // Função para buscar apenas o maxBookings do perfil
+  const fetchMaxBookings = async () => {
+    try {
+      if (!user) return;
+      
+      const profilesResponse = await db.listDocuments(
+        DATABASE_ID,
+        PROFILES_COLLECTION_ID,
+        [Query.equal('userId', user.$id)]
+      );
+
+      if (profilesResponse.documents.length > 0) {
+        const profileDoc = profilesResponse.documents[0];
+        setLocalMaxBookings(profileDoc.maxBookings ?? 0);
+      }
+    } catch (error) {
+      console.error('Error fetching maxBookings:', error);
+    }
+  };
+
+  // Atualizar localMaxBookings quando o profile carregar
+  useEffect(() => {
+    if (profile?.maxBookings !== undefined) {
+      setLocalMaxBookings(profile.maxBookings);
+    }
+  }, [profile?.maxBookings]);
+
+  // Buscar maxBookings na primeira carga
+  useEffect(() => {
+    if (user && !localMaxBookings) {
+      fetchMaxBookings();
+    }
+  }, [user, localMaxBookings]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      if (!currentGym) {
+        setError('Selecione uma academia nas configurações do perfil');
+        return;
+      }
+
+      // Buscar maxBookings atualizado
+      await fetchMaxBookings();
+
+      const [dates, trainers, userSchedules] = await Promise.all([
+        ScheduleService.getAvailableDates(),
+        ScheduleService.getAvailableTrainers(),
+        ScheduleService.getUserSchedules(user),
+      ]);
+
+      setAvailableDates(dates);
+      setAvailableTrainers(trainers);
+      setSchedules(userSchedules);
+      setError(null);
+    } catch (err) {
+      setError('Falha ao atualizar dados. Tente novamente.');
+      console.error('Error refreshing schedule data:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Load available time slots when a date is selected
   useEffect(() => {
@@ -294,6 +357,14 @@ export default function ScheduleScreen() {
     });
   };
 
+  // Cálculo de agendamentos ativos
+  const activeSchedulesCount = schedules.filter(
+    (s) => s.status === 'booked' && new Date(s.date) >= new Date()
+  ).length;
+  // Pega o máximo permitido do profile (default 0 se não vier)
+  const maxBookings = localMaxBookings ?? profile?.maxBookings ?? 0;
+  const canBook = activeSchedulesCount < maxBookings;
+
   if (loading) {
     return (
       <View
@@ -369,8 +440,10 @@ export default function ScheduleScreen() {
             style={[
               styles.newButton,
               { backgroundColor: paperTheme.colors.primary },
+              !canBook && { opacity: 0.5 },
             ]}
-            onPress={() => setShowNewSchedule(true)}
+            onPress={() => canBook && setShowNewSchedule(true)}
+            disabled={!canBook}
           >
             <Calendar size={16} color={paperTheme.colors.onPrimary} />
             <Text
@@ -382,9 +455,29 @@ export default function ScheduleScreen() {
               Nova Avaliação
             </Text>
           </TouchableOpacity>
+          {canBook && (
+            <Text style={{ color: paperTheme.colors.primary, marginTop: 8 }}>
+              Você ainda pode agendar {maxBookings - activeSchedulesCount} avaliação(ões).
+            </Text>
+          )}
+          {!canBook && (
+            <Text style={{ color: paperTheme.colors.error, marginTop: 8 }}>
+              Você atingiu o limite de avaliações agendadas ({maxBookings}). Cancele uma para agendar outra.
+            </Text>
+          )}
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView 
+          style={styles.content}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[paperTheme.colors.primary]}
+              tintColor={paperTheme.colors.primary}
+            />
+          }
+        >
           {schedules.length === 0 ? (
             <View
               style={[
@@ -517,6 +610,8 @@ export default function ScheduleScreen() {
                     <Text style={styles.emptySectionText}>
                       Você não tem avaliações agendadas.
                     </Text>
+
+                    {canBook && (
                     <TouchableOpacity
                       style={styles.emptyActionButton}
                       onPress={() => setShowNewSchedule(true)}
@@ -525,6 +620,7 @@ export default function ScheduleScreen() {
                         Agendar Avaliação
                       </Text>
                     </TouchableOpacity>
+                    )}
                   </View>
                 )}
               </Animated.View>
@@ -748,12 +844,23 @@ export default function ScheduleScreen() {
         <Text
           style={[styles.bookingTitle, { color: paperTheme.colors.onSurface }]}
         >
-          {scheduleToReschedule ? 'Reagendar Avaliação' : 'Agendar Avaliação'}
+
+          {scheduleToReschedule ?  'Reagendar Avaliação' : 'Agendar Avaliação'}
         </Text>
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[paperTheme.colors.primary]}
+            tintColor={paperTheme.colors.primary}
+          />
+        }
+      >
         <View style={styles.stepContainer}>
           <View style={styles.stepIndicator}>
             <View
@@ -1072,16 +1179,21 @@ export default function ScheduleScreen() {
           <TouchableOpacity
             style={[
               styles.scheduleButton,
-              (!selectedDate || !selectedTime || !selectedTrainer) &&
+              (!selectedDate || !selectedTime || !selectedTrainer || !canBook) &&
                 styles.disabledButton,
             ]}
             onPress={scheduleToReschedule ? handleReschedule : handleSchedule}
-            disabled={!selectedDate || !selectedTime || !selectedTrainer}
+            disabled={!selectedDate || !selectedTime || !selectedTrainer || !canBook}
           >
             <CalendarCheck size={20} color="#fff" />
             <Text style={styles.scheduleButtonText}>Confirmar</Text>
           </TouchableOpacity>
         </View>
+        {!canBook && (
+          <Text style={{ color: paperTheme.colors.error, margin: 16, textAlign: 'center' }}>
+            Você atingiu o limite de avaliações agendadas ({maxBookings}). Cancele uma para agendar outra.
+          </Text>
+        )}
       </ScrollView>
     </View>
   );

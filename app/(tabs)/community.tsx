@@ -95,7 +95,6 @@ export default function CommunityScreen() {
         CommunityService.getFeaturedTrainers(user, currentGym.tenantId),
         CommunityService.getCommunityPosts(user, currentGym.id),
       ]);
-      console.log(trainersData);
       setTrainers(trainersData);
       setPosts(postsData);
     } catch (err) {
@@ -463,13 +462,6 @@ export default function CommunityScreen() {
       new Date().getTime() - new Date(post.createdAt).getTime() <=
         5 * 60 * 1000;
 
-    console.log('Post permissions:', {
-      postAuthorId: post.authorId,
-      userProfileId: profile?.id,
-      userRole: profile?.role,
-      canEdit,
-      isEditable,
-    });
 
     return (
       <View

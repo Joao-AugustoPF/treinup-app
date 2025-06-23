@@ -154,7 +154,6 @@ export class CommunityService {
 
       // Filter out any null posts (where author profile couldn't be fetched)
       const validPosts = posts.filter((post): post is Post => post !== null);
-      console.log('Successfully processed posts:', validPosts.length);
       return validPosts;
     } catch (error) {
       console.error('Error fetching community posts:', error);
@@ -291,7 +290,7 @@ export class CommunityService {
       const response = await db.listDocuments(
         DATABASE_ID,
         PROFILES_COLLECTION_ID,
-        [Query.equal('role', 'TRAINER'), Query.equal('tenantId', tenantId)]
+        [Query.equal('role', ['TRAINER', 'OWNER']), Query.equal('tenantId', tenantId)]
       );
 
       return response.documents.map((doc: any) => ({

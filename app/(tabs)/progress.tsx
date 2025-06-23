@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -115,9 +116,23 @@ export default function ProgressScreen() {
     'composicaoCorporal' | 'medidas' | 'saude'
   >('composicaoCorporal');
 
+  const [refreshing, setRefreshing] = useState(false);
+
+
   useEffect(() => {
     loadMetrics();
   }, [user]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadMetrics();
+    } catch (err) {
+      console.error('Error refreshing progress data:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   /**
    * Carrega métricas do usuário
@@ -385,7 +400,6 @@ export default function ProgressScreen() {
     const bodyFat = latestMetrics.body_fat_pct ?? 0;
     const leanMass = latestMetrics.lean_mass_pct ?? 100 - bodyFat;
 
-    // console.log('leanMass', leanMass);
 
     return [
       {
@@ -426,10 +440,6 @@ export default function ProgressScreen() {
   const weightData = lineChartData.filter((point) => !point.dataSet);
   const fatData = lineChartData.filter((point) => point.dataSet === 2);
 
-  // console.log('lineChartData', lineChartData);
-  // console.log('weightData', weightData);
-  // console.log('fatData', fatData);
-
   return (
     <View
       style={[
@@ -437,7 +447,16 @@ export default function ProgressScreen() {
         { backgroundColor: paperTheme.colors.background },
       ]}
     >
-      <ScrollView>
+      <ScrollView 
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[paperTheme.colors.primary]}
+            tintColor={paperTheme.colors.primary}
+          />
+        }
+      >
         <View
           style={[styles.hero, { backgroundColor: paperTheme.colors.surface }]}
         >
@@ -546,7 +565,7 @@ export default function ProgressScreen() {
                       <Text
                         style={[
                           styles.changeText,
-                          { color: paperTheme.colors.onSurface },
+                          { color: paperTheme.colors.surface },
                         ]}
                       >
                         {Number(metric.change) > 0 ? '+' : ''}
@@ -781,7 +800,7 @@ export default function ProgressScreen() {
                         <Text
                           style={[
                             styles.changeText,
-                            { color: paperTheme.colors.onSurface },
+                            { color: paperTheme.colors.surface },
                           ]}
                         >
                           {Number(metric.change) > 0 ? '+' : ''}
@@ -794,7 +813,7 @@ export default function ProgressScreen() {
               </View>
 
               {/* Bar Chart - Weekly Volume */}
-              <View style={styles.section}>
+              {/* <View style={styles.section}>
                 <Text
                   style={[
                     styles.sectionTitle,
@@ -834,7 +853,7 @@ export default function ProgressScreen() {
                     rulesColor={`${paperTheme.colors.onSurface}10`}
                   />
                 </View>
-              </View>
+              </View> */}
 
               {/* Measurements Visualization */}
               <View style={styles.section}>
@@ -1088,7 +1107,7 @@ export default function ProgressScreen() {
                       }))}
                       radius={120}
                       showText
-                      textColor={paperTheme.colors.onSurface}
+                      textColor={paperTheme.colors.surface}
                       textSize={20}
                       fontWeight="bold"
                       focusOnPress

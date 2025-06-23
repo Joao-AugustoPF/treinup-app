@@ -21,13 +21,14 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
+import { Switch } from 'react-native-paper';
 
 // Define types for our settings items
 type SettingItemBase = {
@@ -433,22 +434,30 @@ export default function SettingsScreen() {
                         typeof item.value === 'boolean' ? item.value : false
                       }
                       onValueChange={item.onToggle}
-                      trackColor={{
-                        false: paperTheme.colors.surfaceVariant,
-                        true: paperTheme.colors.primary,
-                      }}
-                      thumbColor={paperTheme.colors.onPrimary}
                       disabled={loading}
+                      color={paperTheme.colors.primary}
                     />
                   ) : item.type === 'select' ? (
-                    <Text
+                    <View
                       style={[
-                        styles.settingValue,
-                        { color: paperTheme.colors.onSurfaceVariant },
+                        styles.selectContainer,
+                        Platform.OS === 'android' && {
+                          backgroundColor: paperTheme.colors.surfaceVariant,
+                          paddingHorizontal: 12,
+                          paddingVertical: 6,
+                          borderRadius: 8,
+                        },
                       ]}
                     >
-                      {item.value}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.settingValue,
+                          { color: paperTheme.colors.onSurfaceVariant },
+                        ]}
+                      >
+                        {item.value}
+                      </Text>
+                    </View>
                   ) : (
                     <View style={styles.buttonContainer}>
                       {item.isLoading ? (
@@ -558,5 +567,9 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  selectContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

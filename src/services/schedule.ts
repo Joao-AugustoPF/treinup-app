@@ -53,11 +53,11 @@ export class ScheduleService {
 
   static async getAvailableTrainers(): Promise<Trainer[]> {
     try {
-      // Query for profiles with role=TRAINER
+      // Query for profiles with role=TRAINER or role=OWNER
       const trainersResponse = await db.listDocuments(
         DATABASE_ID,
         PROFILES_COLLECTION_ID,
-        [Query.equal('role', 'TRAINER')]
+        [Query.equal('role', ['TRAINER', 'OWNER'])]
       );
 
       return trainersResponse.documents.map((trainer) => ({
@@ -107,19 +107,11 @@ export class ScheduleService {
         queries
       );
 
-      console.log(
-        `Found ${slotsResponse.documents.length} total slots for the selected date`
-      );
-
       // Get all booked slots
       const bookingsResponse = await db.listDocuments(
         DATABASE_ID,
         EVALUATION_BOOKINGS_COLLECTION_ID,
         [Query.equal('status', 'booked')]
-      );
-
-      console.log(
-        `Found ${bookingsResponse.documents.length} booked slots in total`
       );
 
       // Extract booked slot IDs, handling both string IDs and object references
@@ -137,14 +129,10 @@ export class ScheduleService {
         })
         .filter((id) => id !== null); // Remove any null values
 
-      console.log(`Extracted ${bookedSlotIds.length} booked slot IDs`);
-
       // Filter out slots that are already booked
       const availableSlots = slotsResponse.documents.filter(
         (slot) => !bookedSlotIds.includes(slot.$id)
       );
-
-      console.log(`Available slots after filtering: ${availableSlots.length}`);
 
       // Extract time strings
       const timeSlots = availableSlots.map((slot) => {
@@ -180,8 +168,6 @@ export class ScheduleService {
         throw new Error('User not authenticated');
       }
 
-      console.log('user', user);
-
       // First, get the user's profile
       const profilesResponse = await db.listDocuments(
         DATABASE_ID,
@@ -201,8 +187,6 @@ export class ScheduleService {
         EVALUATION_BOOKINGS_COLLECTION_ID,
         [Query.equal('memberProfileId', userProfileId)]
       );
-
-      console.log('bookings found:', bookingsResponse.documents);
 
       // Map to the return type expected by the UI
       const schedules = bookingsResponse.documents.map((booking) => {
@@ -237,8 +221,6 @@ export class ScheduleService {
           };
         } else {
           // Handle the case where we only have an ID and need to fetch the slot
-          // This is more of a fallback and might not be needed
-          console.log('Slot is not embedded, only ID is present:', slotData);
           return {
             id: booking.$id,
             date: new Date(),
@@ -250,7 +232,6 @@ export class ScheduleService {
         }
       });
 
-      console.log('processed schedules:', schedules);
       return schedules;
     } catch (error: any) {
       console.error('Error fetching user schedules:', error);
@@ -268,8 +249,6 @@ export class ScheduleService {
       if (!user) {
         throw new Error('Usuário não autenticado');
       }
-
-      console.log('Creating schedule:', { date, time, trainerId });
 
       // Find the user's profile ID
       const profilesResponse = await db.listDocuments(
@@ -343,8 +322,6 @@ export class ScheduleService {
           memberProfileId: userProfileId,
         }
       );
-
-      console.log('Booking created successfully:', result);
     } catch (error: any) {
       console.error('Error creating schedule:', error);
       throw new Error(`Falha ao agendar: ${error.message}`);
@@ -359,8 +336,6 @@ export class ScheduleService {
       if (!user) {
         throw new Error('User not authenticated');
       }
-
-      console.log('Cancelling booking:', scheduleId);
 
       // Get the booking document to check if it exists and its current status
       const booking = await db.getDocument(
@@ -387,9 +362,6 @@ export class ScheduleService {
 
       const userProfileId = profilesResponse.documents[0].$id;
 
-      console.log('userProfileId', userProfileId);
-      console.log('booking', booking.memberProfileId.$id);
-
       // Optional: check if the booking belongs to the current user
       if (booking.memberProfileId.$id !== userProfileId) {
         throw new Error(
@@ -407,7 +379,6 @@ export class ScheduleService {
         }
       );
 
-      console.log('Booking cancelled successfully:', result);
     } catch (error: any) {
       console.error('Error cancelling schedule:', error);
       throw new Error(`Falha ao cancelar: ${error.message}`);
@@ -425,22 +396,11 @@ export class ScheduleService {
         throw new Error('Usuário não autenticado');
       }
 
-      console.log('Rescheduling appointment:', {
-        scheduleId,
-        newDate,
-        newTime,
-      });
-
       // Get current booking
       const currentBooking = await db.getDocument(
         DATABASE_ID,
         EVALUATION_BOOKINGS_COLLECTION_ID,
         scheduleId
-      );
-
-      console.log(
-        'Current booking details:',
-        JSON.stringify(currentBooking, null, 2)
       );
 
       if (currentBooking.status !== 'booked') {
@@ -504,7 +464,6 @@ export class ScheduleService {
           }
         }
 
-        console.log('Extracted trainerId:', trainerId);
       } catch (error) {
         console.error('Error getting trainer ID:', error);
         throw new Error('Falha ao obter informações do treinador atual');
@@ -525,10 +484,6 @@ export class ScheduleService {
         ]
       );
 
-      console.log(
-        `Found ${slotsResponse.documents.length} potential slots for the new date`
-      );
-
       // Find the slot with the matching time
       const newSlot = slotsResponse.documents.find((slot) => {
         const slotTime = new Date(slot.start);
@@ -542,8 +497,6 @@ export class ScheduleService {
           'Nenhum horário disponível encontrado para esta data e treinador'
         );
       }
-
-      console.log('Selected new slot:', newSlot.$id);
 
       // Check if this slot is already booked by someone else
       const bookingsResponse = await db.listDocuments(
@@ -560,8 +513,6 @@ export class ScheduleService {
         throw new Error('Este horário já está reservado por outro usuário');
       }
 
-      // Update the existing booking with the new slot
-      console.log('Updating booking with new slot ID:', newSlot.$id);
       const result = await db.updateDocument(
         DATABASE_ID,
         EVALUATION_BOOKINGS_COLLECTION_ID,
@@ -570,8 +521,6 @@ export class ScheduleService {
           evaluationSlots: newSlot.$id,
         }
       );
-
-      console.log('Appointment rescheduled successfully:', result.$id);
       return;
     } catch (error: any) {
       console.error('Error rescheduling appointment:', error);
