@@ -79,4 +79,45 @@ Facilitar o acompanhamento e a personalização de treinos, promovendo o engajam
   ```
   > Obs: É necessário estar logado previamente na CLI do Appwrite (`npx appwrite login`)
 
-Mais detalhes sobre as configurações específicas podem ser encontrados no repositório do projeto no GitHub.
+## 6. Como Executar o Projeto
+
+### Rodando em modo desenvolvimento
+
+Execute o comando abaixo para iniciar o app em modo desenvolvimento:
+
+```bash
+yarn start
+# ou
+npm run start
+```
+
+Isso abrirá o Expo DevTools, permitindo rodar o app em emuladores Android/iOS ou no dispositivo físico via QR Code.
+
+### Rodando em produção
+
+Para gerar um build de produção, utilize:
+
+```bash
+yarn build
+# ou
+npm run build
+```
+
+Consulte a documentação do Expo para detalhes sobre publicação e builds para lojas.
+
+## 14. Créditos e Referências
+
+Este projeto foi desenvolvido de forma colaborativa pelo grupo, com participação ativa de todos os integrantes nas etapas de concepção, desenvolvimento e testes.
+
+**Equipe de desenvolvimento:**
+
+- Rhyan Kaique
+- João Augusto
+- Yuri Cardoso
+- Lucas
+
+**Fontes e materiais de apoio:**
+
+- Documentação oficial do Expo
+- Documentação oficial do Appwrite
+- Outros materiais e referências utilizados durante o desenvolvimento
