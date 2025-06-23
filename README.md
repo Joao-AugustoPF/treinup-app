@@ -1,40 +1,82 @@
-# Bem-vindo ao seu aplicativo Expo 👋
+# TreinOPP
 
-Este é um projeto [Expo](https://expo.dev) criado com [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## 1. Visão Geral
 
-## Como começar
+O TreinOPP é um aplicativo mobile desenvolvido para auxiliar academias, treinadores e alunos na gestão de treinos, acompanhamento de progresso e integração da comunidade fitness. Este projeto foi idealizado especialmente para atender às necessidades da Lidiane, levando em consideração suas demandas específicas no contexto de acompanhamento de alunos e organização de atividades.
 
-1. Instale as dependências
+**Objetivo principal:**
+Facilitar o acompanhamento e a personalização de treinos, promovendo o engajamento dos alunos e otimizando o trabalho dos profissionais de educação física.
 
-   Usando npm:
+**Público-alvo:**
 
-   ```bash
-   npm install
-   ```
+- Alunos de academias que desejam acompanhar seu progresso e receber orientações personalizadas
+- Treinadores e profissionais de educação física
+- Gestores de academias interessados em modernizar a experiência dos seus clientes
 
-   Ou usando Yarn (recomendado):
+## 2. Funcionalidades Principais
 
+**Principais funcionalidades:**
+
+- Cadastro e autenticação de usuários (alunos e treinadores)
+- Marcação e visualização de aulas e horários
+- Acompanhamento do progresso dos alunos
+- Notificações em tempo real para lembretes e avisos
+- Área de comunidade para interação entre alunos e treinadores
+- Perfil personalizado para cada usuário
+- Configurações de privacidade e notificações
+
+**Diferenciais em relação a soluções similares:**
+
+- Projeto personalizado para atender às necessidades específicas da Lidiane
+- Foco na simplicidade e facilidade de uso para todos os perfis de usuário
+- Integração eficiente entre acompanhamento de progresso e comunicação
+- Possibilidade de customização futura conforme feedback dos usuários
+
+## 3. Tecnologias Utilizadas
+
+**Frameworks e bibliotecas principais:**
+
+- Expo: Plataforma para desenvolvimento de aplicativos React Native
+- React Native: Framework para desenvolvimento mobile multiplataforma
+- Appwrite: Backend como serviço para autenticação, banco de dados e notificações
+
+**Outras dependências relevantes:**
+
+- TypeScript: Tipagem estática para JavaScript
+- React Navigation: Navegação entre telas no app
+- Axios: Requisições HTTP
+- Context API: Gerenciamento de estado global
+- ESLint e Prettier: Padronização e qualidade de código
+- Outras bibliotecas específicas para UI, animações e notificações
+
+## 4. Instalação e Configuração
+
+### Pré-requisitos
+
+- Node.js e npm ou Yarn instalados
+- Expo CLI instalado globalmente (`npm install -g expo-cli`)
+- Conta e instância do Appwrite configuradas (backend)
+- Acesso à plataforma web do Appwrite para gerenciamento dos dados e usuários
+
+### Passos para instalação das dependências
+
+1. Clone o repositório do projeto a partir do seu GitHub
+2. Instale as dependências do projeto:
    ```bash
    yarn
+   # ou
+   npm install
    ```
+3. Instale e configure o Appwrite conforme a [documentação oficial](https://appwrite.io/docs)
 
-2. Inicie o aplicativo
+### Configuração de variáveis de ambiente e serviços externos
 
-   Usando npm:
+- Configure as variáveis de ambiente necessárias para conectar o app ao seu backend Appwrite (exemplo: endpoint, projectId, etc.)
+- As configurações do Appwrite podem ser gerenciadas e exportadas/importadas usando a plataforma web ou via CLI
+- Para aplicar as configurações do Appwrite presentes em `/src`, utilize:
+  ```bash
+  npx appwrite push
+  ```
+  > Obs: É necessário estar logado previamente na CLI do Appwrite (`npx appwrite login`)
 
-   ```bash
-   npm run start
-   ```
-
-   Ou usando Yarn:
-
-   ```bash
-   yarn start
-   ```
-
-Na saída, você encontrará opções para abrir o aplicativo em:
-
-- [build de desenvolvimento](https://docs.expo.dev/develop/development-builds/introduction/)
-- [emulador Android](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [simulador iOS](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), um ambiente limitado para experimentar o desenvolvimento de aplicativos com Expo
+Mais detalhes sobre as configurações específicas podem ser encontrados no repositório do projeto no GitHub.
