@@ -107,9 +107,7 @@ Consulte a documentação do Expo para detalhes sobre publicação e builds para
 
 ## 7. Screenshots do APP
 
-![Telas de perfil](C:\Screenshots/Perfil)
-![Telas de Progresso](C:\Screenshots/Progresso)
-![Tela de atividade](C:\Screenshots/Atividade)
+
 
 ## 14. Créditos e Referências
 
