@@ -109,7 +109,7 @@ Consulte a documentação do Expo para detalhes sobre publicação e builds para
 
 ![Telas de perfil](Perfil.png)
 ![Telas de progresso](Progresso.png)
-![Tela de atividade](Atividade.png)
+![Tela de atividade](Atividades.png)
 
 ## 14. Créditos e Referências
 
