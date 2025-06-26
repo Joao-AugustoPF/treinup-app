@@ -105,6 +105,12 @@ npm run build
 
 Consulte a documentação do Expo para detalhes sobre publicação e builds para lojas.
 
+## 7. Screenshots do APP
+
+![Telas de perfil](C:\Screenshots/Perfil)
+![Telas de Progresso](C:\Screenshots/Progresso)
+![Tela de atividade](C:\Screenshots/Atividade)
+
 ## 14. Créditos e Referências
 
 Este projeto foi desenvolvido de forma colaborativa pelo grupo, com participação ativa de todos os integrantes nas etapas de concepção, desenvolvimento e testes.
