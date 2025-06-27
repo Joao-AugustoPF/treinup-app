@@ -118,6 +118,28 @@ Consulte a documentação do Expo para detalhes sobre publicação e builds para
 -Segundo plano;
 -Maior clareza no modo escuro;
 
+## 9. Estrutura das pastas
+
+O projeto está organizado da seguinte forma:
+
+/assets: Recursos estáticos como imagens, ícones e fontes.
+/components: Componentes reutilizáveis e desacoplados da aplicação.
+/config: Arquivos de configuração para serviços externos e ambientes.
+/constants: Definições de constantes globais, como paleta de cores e mensagens padrão.
+/docs: Documentos técnicos, instruções de instalação e relatórios.
+/functions: Funções utilitárias ou serverless, caso aplicável.
+/hooks: Custom Hooks utilizados na aplicação.
+/scripts: Scripts auxiliares para automação e build.
+/src: Código-fonte principal da aplicação.
+/components: Componentes reutilizáveis.
+/screens: Telas e páginas da aplicação.
+/services: Serviços de API e integração.
+/navigation: Arquivos de configuração de navegação.
+/context: Contextos globais React.
+/utils: Funções utilitárias.
+/types: Tipagens e interfaces TypeScript.
+Arquivos de configuração e controle (package.json, tsconfig.json, etc.)
+
 ## 14. Créditos e Referências
 
 Este projeto foi desenvolvido de forma colaborativa pelo grupo, com participação ativa de todos os integrantes nas etapas de concepção, desenvolvimento e testes.
