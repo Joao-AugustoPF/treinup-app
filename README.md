@@ -111,6 +111,13 @@ Consulte a documentação do Expo para detalhes sobre publicação e builds para
 ![Telas de progresso](Progresso.png)
 ![Tela de atividade](Atividades.png)
 
+## 8. Updates futuros
+
+-Login mais robusto;
+-Endereço obrigatorio ao cadastrar;
+-Segundo plano;
+-Maior clareza no modo escuro;
+
 ## 14. Créditos e Referências
 
 Este projeto foi desenvolvido de forma colaborativa pelo grupo, com participação ativa de todos os integrantes nas etapas de concepção, desenvolvimento e testes.
