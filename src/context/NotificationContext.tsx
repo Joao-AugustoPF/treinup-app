@@ -5,7 +5,11 @@ import {
   NotificationService,
 } from '@/src/services/notification';
 import { ProfileService } from '@/src/services/profile';
-import { pushNotificationService, PushNotificationToken } from '@/src/services/pushNotification';
+import {
+  pushNotificationService,
+  PushNotificationToken,
+} from '@/src/services/pushNotification';
+import { PushTokenService } from '@/src/services/pushToken';
 import { RealtimeResponseEvent } from 'appwrite';
 import type { EventSubscription } from 'expo-notifications';
 import { useRouter } from 'expo-router';
@@ -87,7 +91,9 @@ export function NotificationsProvider({
 }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [pushToken, setPushToken] = useState<PushNotificationToken | null>(null);
+  const [pushToken, setPushToken] = useState<PushNotificationToken | null>(
+    null
+  );
   const [isPushRegistered, setIsPushRegistered] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
@@ -134,7 +140,8 @@ export function NotificationsProvider({
   const registerForPushNotifications = async () => {
     console.log('🚀 Starting push notification registration...');
     try {
-      const token = await pushNotificationService.registerForPushNotifications();
+      const token =
+        await pushNotificationService.registerForPushNotifications();
       if (token) {
         setPushToken(token);
         setIsPushRegistered(true);
@@ -142,6 +149,20 @@ export function NotificationsProvider({
         console.log('🔔 Expo Token:', token.expoToken);
         console.log('📱 Device Token:', token.deviceToken);
         console.log('✅ Push Token Object:', token);
+
+        // Registrar o token no Appwrite se o usuário estiver logado
+        if (user?.$id && token.expoToken) {
+          console.log('📝 Registrando push target no Appwrite...');
+          const result = await PushTokenService.registerPushToken(token);
+          if (result.success) {
+            console.log(
+              '✅ Push target registrado no Appwrite:',
+              result.action
+            );
+          } else {
+            console.warn('⚠️ Falha ao registrar push target no Appwrite');
+          }
+        }
       } else {
         console.log('❌ No push token received');
       }
@@ -155,7 +176,11 @@ export function NotificationsProvider({
     body: string,
     data?: Record<string, any>
   ): Promise<string> => {
-    return await pushNotificationService.scheduleLocalNotification(title, body, data);
+    return await pushNotificationService.scheduleLocalNotification(
+      title,
+      body,
+      data
+    );
   };
 
   const scheduleWorkoutReminder = async (
@@ -164,7 +189,12 @@ export function NotificationsProvider({
     scheduledTime: Date,
     data?: Record<string, any>
   ): Promise<string> => {
-    return await pushNotificationService.scheduleWorkoutReminder(title, body, scheduledTime, data);
+    return await pushNotificationService.scheduleWorkoutReminder(
+      title,
+      body,
+      scheduledTime,
+      data
+    );
   };
 
   const scheduleDailyReminder = async (
@@ -174,7 +204,13 @@ export function NotificationsProvider({
     minute: number,
     data?: Record<string, any>
   ): Promise<string> => {
-    return await pushNotificationService.scheduleDailyReminder(title, body, hour, minute, data);
+    return await pushNotificationService.scheduleDailyReminder(
+      title,
+      body,
+      hour,
+      minute,
+      data
+    );
   };
 
   const scheduleWeeklyReminder = async (
@@ -185,7 +221,14 @@ export function NotificationsProvider({
     minute: number,
     data?: Record<string, any>
   ): Promise<string> => {
-    return await pushNotificationService.scheduleWeeklyReminder(title, body, weekday, hour, minute, data);
+    return await pushNotificationService.scheduleWeeklyReminder(
+      title,
+      body,
+      weekday,
+      hour,
+      minute,
+      data
+    );
   };
 
   const cancelNotification = async (notificationId: string): Promise<void> => {
@@ -217,28 +260,28 @@ export function NotificationsProvider({
       let responseListener: EventSubscription | null = null;
 
       // Setup notification listeners
-      pushNotificationService.addNotificationReceivedListener(
-        (notification) => {
+      pushNotificationService
+        .addNotificationReceivedListener((notification) => {
           console.log('Notification received:', notification);
           // Refresh notifications when a new one is received
           refreshNotifications();
-        }
-      ).then((listener) => {
-        notificationListener = listener;
-      });
+        })
+        .then((listener) => {
+          notificationListener = listener;
+        });
 
-      pushNotificationService.addNotificationResponseReceivedListener(
-        (response) => {
+      pushNotificationService
+        .addNotificationResponseReceivedListener((response) => {
           console.log('Notification response received:', response);
           // Handle notification tap
           const data = response.notification.request.content.data;
           if (data?.screen) {
             router.push(data.screen as any);
           }
-        }
-      ).then((listener) => {
-        responseListener = listener;
-      });
+        })
+        .then((listener) => {
+          responseListener = listener;
+        });
 
       // Check for initial notification response
       pushNotificationService.getLastNotificationResponse().then((response) => {
@@ -312,10 +355,7 @@ export function NotificationsProvider({
     if (!user?.$id) return;
 
     try {
-      const profile = await ProfileService.getUserProfile(user);
-      if (!profile?.tenantId) return;
-
-      await NotificationService.markAllAsRead(profile.tenantId, user.$id);
+      await NotificationService.markAllAsRead(user.$id);
       await refreshNotifications();
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -324,6 +364,7 @@ export function NotificationsProvider({
 
   const clearNotification = async (id: string) => {
     if (!user?.$id) return;
+
     try {
       await NotificationService.deleteNotification(id, user.$id);
       await refreshNotifications();
@@ -334,14 +375,9 @@ export function NotificationsProvider({
 
   const clearAllNotifications = async () => {
     if (!user?.$id) return;
-    try {
-      const profile = await ProfileService.getUserProfile(user);
-      if (!profile?.tenantId) return;
 
-      await NotificationService.deleteAllNotifications(
-        profile.tenantId,
-        user.$id
-      );
+    try {
+      await NotificationService.deleteAllNotifications(user.$id);
       await refreshNotifications();
     } catch (error) {
       console.error('Error clearing all notifications:', error);
@@ -379,9 +415,9 @@ export function NotificationsProvider({
 
 export const useNotifications = () => {
   const context = useContext(NotificationsContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error(
-      'useNotifications must be used within a NotificationsProvider'
+      'useNotifications must be used within a NotificationsProvider.'
     );
   }
   return context;

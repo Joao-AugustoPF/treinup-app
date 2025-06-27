@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ID, Models } from 'react-native-appwrite';
 import { account, client, functions } from '../api/appwrite-client';
+import { pushNotificationService } from '../services/pushNotification';
+import { PushTokenService } from '../services/pushToken';
 import { secureStore } from '../utils/secureStore';
 
 interface AuthContextType {
@@ -10,6 +12,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
+  registerPushTokenForUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,7 +37,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const jwt = await account.createJWT();
         client.setJWT(jwt.jwt);
         setSessionId(session.$id);
-        setUser(await account.get());
+        const currentUser = await account.get();
+        setUser(currentUser);
+
+        // Registrar push token se o usuário estiver logado
+        if (currentUser) {
+          await registerPushTokenForUser();
+        }
       }
     } catch (error) {
       await secureStore.clearAll();
@@ -54,13 +63,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Função para registrar push token para o usuário atual
+  const registerPushTokenForUser = async () => {
+    try {
+      console.log('🔄 Tentando registrar push token...');
+
+      // Obter o push token atual
+      const pushToken =
+        await pushNotificationService.registerForPushNotifications();
+
+      if (pushToken && pushToken.expoToken) {
+        console.log('📱 Push token obtido, registrando no Appwrite...');
+
+        const result = await PushTokenService.registerPushToken(pushToken);
+
+        if (result.success) {
+          console.log('✅ Push target registrado com sucesso:', result.action);
+        } else {
+          console.warn('⚠️ Falha ao registrar push target, mas continuando...');
+        }
+      } else {
+        console.log('ℹ️ Nenhum push token disponível para registro');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao registrar push token:', error);
+      // Não vamos falhar o login por causa do push token
+    }
+  };
+
   const login = async (email: string, password: string) => {
     try {
       // Tenta limpar sessão anterior usando a função separada
       // await deleteCurrentSession();
       const session = await account.createEmailPasswordSession(email, password);
 
-      client.setSession(session.$id);   // precisa vir *antes* de qualquer outra chamada
+      client.setSession(session.$id); // precisa vir *antes* de qualquer outra chamada
       const jwt = await account.createJWT(); // agora não quebra
 
       await secureStore.setSessionId(session.$id);
@@ -68,7 +105,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       client.setJWT(jwt.jwt);
       setSessionId(session.$id);
-      setUser(await account.get());
+      const currentUser = await account.get();
+      setUser(currentUser);
+
+      // Registrar push token após login bem-sucedido
+      if (currentUser) {
+        await registerPushTokenForUser();
+      }
     } catch (error) {
       throw error;
     }
@@ -136,14 +179,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      // Remover todos os push targets antes do logout
+      try {
+        await PushTokenService.removeAllPushTargets();
+        console.log('✅ Push targets removidos no logout');
+      } catch (error) {
+        console.warn('⚠️ Erro ao remover push targets no logout:', error);
+      }
+
       // Apaga a sessão *pelo ID real*, não por 'current'
       if (sessionId) {
         await account.deleteSession(sessionId);
       }
 
       // Limpa qualquer autenticação em memória
-      client.setSession('');  // remove X-Appwrite-Session
-      client.setJWT('');      // remove X-Appwrite-JWT
+      client.setSession(''); // remove X-Appwrite-Session
+      client.setJWT(''); // remove X-Appwrite-JWT
 
       // Limpa armazenamento local
       await secureStore.clearAll();
@@ -164,6 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        registerPushTokenForUser,
       }}
     >
       {children}

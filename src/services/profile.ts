@@ -1,8 +1,8 @@
 import { Query } from 'appwrite';
 import {
-    DATABASE_ID,
-    db,
-    PROFILES_COLLECTION_ID,
+  DATABASE_ID,
+  db,
+  PROFILES_COLLECTION_ID,
 } from '../api/appwrite-client';
 
 export type UserProfile = {
