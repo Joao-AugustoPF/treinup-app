@@ -79,6 +79,20 @@ Facilitar o acompanhamento e a personalização de treinos, promovendo o engajam
   ```
   > Obs: É necessário estar logado previamente na CLI do Appwrite (`npx appwrite login`)
 
+## 5. Configurando o Appwrite, e rodar localmente utilizando o docker compose
+
+1. Instalar o appwrite cli utilizando npm install -g appwrite-cli
+2. No PowerShell do windows digitar docker run -it --rm `
+    --volume /var/run/docker.sock:/var/run/docker.sock `
+    --volume ${pwd}/appwrite:/usr/src/code/appwrite:rw `
+    --entrypoint="install" `
+    appwrite/appwrite:1.7.4
+, isso fara com que o appwrite seja rodado remotamente com o docker
+3. Apos isso, na pasta onde foi executado o comando, modificar os arquivos docker-compose.yml e .env para que utilize o endereço IPv4 da maquina
+4. Logo em seguida sera possivel acessar o Appwrite utilizando o IPv4 da maquina, nele e preciso criar uma conta ou utilizar uma para fazer login
+5. Agora no terminal digite npx appwrite login --endpoint http://ipv4/v1 com o seu IPv4, e logue com seu email e senha criados.
+6. Por fim e so utilizar npx appwrite push --all para dar push em tudo
+
 ## 6. Como Executar o Projeto
 
 ### Rodando em modo desenvolvimento
@@ -104,6 +118,57 @@ npm run build
 ```
 
 Consulte a documentação do Expo para detalhes sobre publicação e builds para lojas.
+
+## 7. Screenshots do APP
+
+![Telas de perfil](Perfil.png)
+![Telas de progresso](Progresso.png)
+![Tela de atividade](Atividades.png)
+
+## 8. Updates futuros
+
+-Login mais robusto;
+-Endereço obrigatorio ao cadastrar;
+-Segundo plano;
+-Maior clareza no modo escuro;
+
+## 9. Estrutura das pastas
+
+O projeto está organizado da seguinte forma:
+
+/assets: Recursos estáticos como imagens, ícones e fontes.
+
+/components: Componentes reutilizáveis e desacoplados da aplicação.
+
+/config: Arquivos de configuração para serviços externos e ambientes.
+
+/constants: Definições de constantes globais, como paleta de cores e mensagens padrão.
+
+/docs: Documentos técnicos, instruções de instalação e relatórios.
+
+/functions: Funções utilitárias ou serverless, caso aplicável.
+
+/hooks: Custom Hooks utilizados na aplicação.
+
+/scripts: Scripts auxiliares para automação e build.
+
+/src: Código-fonte principal da aplicação.
+
+/components: Componentes reutilizáveis.
+
+/screens: Telas e páginas da aplicação.
+
+/services: Serviços de API e integração.
+
+/navigation: Arquivos de configuração de navegação.
+
+/context: Contextos globais React.
+
+/utils: Funções utilitárias.
+
+/types: Tipagens e interfaces TypeScript.
+
+Arquivos de configuração e controle (package.json, tsconfig.json, etc.)
 
 ## 14. Créditos e Referências
 
